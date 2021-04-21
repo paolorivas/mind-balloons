@@ -1,0 +1,167 @@
+<!--
+ * p5.js bubbles visualization
+ *
+ * https://github.com/pete-rai/p5js-bubbles
+ *
+ * This file is a SAMPLE PAGE ONLY
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>p5js-bubbles | sample |&nbsp;</title>
+    <meta charset="UTF-8">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <style type="text/css">
+          body { padding: 0px; margin: 0px; overflow: hidden; }
+      #restart { font-size: 12pt; position: absolute; left: 5px; top: 5px; z-index: 99; }
+      #add_New {font-size: 12pt; position: absolute; left: 150px; top: 5px; z-index: 99; }
+      #delete_New {font-size: 12pt; position: absolute; left: 175px; top: 5px; z-index: 99; }
+      #grow_time {font-size: 12pt; position: absolute; right: 200px; bottom: 5px; z-index: 99; }
+      #my_timer { font-size: 12pt; position: absolute; right: 5px; bottom: 5px; z-index: 99;}
+
+    </style>
+    <!-- the following css is an example of custom coloring, remove it to return to default coloring -->
+    <style type="text/css">
+       .bubbles_bubble       { background-color: #FAFAFA;   color: #000080;   }
+       .bubbles_bubble:hover { background-color: lightblue; color: indianred; }
+       .bubbles_world        { background-color: darkgrey; }
+    </style>
+    <style>
+      body {font-family: Arial, Helvetica, sans-serif;}
+      
+      /* The Modal (background) */
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+      
+      /* Modal Content */
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+      }
+      
+      /* The Close Button */
+      .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      
+      .close:hover,
+      .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      </style>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.8/p5.min.js"></script>
+    <script type="text/javascript" src="bubbles.p5.js"></script>
+    <script type="text/javascript">
+
+// this is an example of bubble data in a local array
+
+var g20 = {
+    "US": {"name": "Call Mom today!", "count": 18569,
+          "css": {
+               ".bubbles_bubble":       { "background-color": "#FF8484", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "CN": {"name": "Do python Assignment (due this friday)", "count": 11218,
+          "css": {
+               ".bubbles_bubble":       { "background-color": "#a4ffca", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "JP": {"name": "Meeting with marketing 8:30 AM", "count": 4938,
+          "css": {
+               ".bubbles_bubble":       { "background-color": "#cd79dd", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "DE": {"name": "talk to Landlord", "count": 3466,
+          "css": {
+               ".bubbles_bubble":       { "background-color": "#00baf0", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "UK": {"name": "Groceries", "count": 2629,   /* united kingdom shows an example of per bubble colors specified within the source data */
+           "css": {
+               ".bubbles_bubble":       { "background-color": "#FFE4B5", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "FR": {"name": "Empty & Ready for U", "count": 2463},
+    "IN": {"name": "Yours to choose", "count": 2256},
+    "IT": {"name": "Do Laundry", "count": 1851,
+          "css": {
+               ".bubbles_bubble":       { "background-color": "#D8BFD8", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+    "BR": {"name": "blah", "count": 1799},
+    "CA": {"name": "blah", "count": 1529},
+    "KR": {"name": "blah", "count": 1411},
+    "RS": {"name": "blah", "count": 1281},
+    "AU": {"name": "blah", "count": 1259},
+    "ES": {"name": "blah", "count": 1033},
+    "MX": {"name": "blah", "count": 1046},
+    "ID": {"name": "blah", "count": 932},
+    "TR": {"name": "blah", "count": 857},
+    "NL": {"name": "blah", "count": 771},
+    "CH": {"name": "blah", "count": 660},
+    "SA": {"name": "BBA Final Presentation", "count": 2240,
+           "css": {
+               ".bubbles_bubble":       { "background-color": "#F5F5F5", "color": "#800080"},
+               ".bubbles_bubble:hover": { "background-color": "#000" , "color": "hotpink" } } },
+
+  };
+
+      if  (window.location.search == "?movies")
+      {
+          data  = "sample-topmovies.json";
+          title = "top grossing movies";
+          info  = "https://en.wikipedia.org/wiki/";
+          tip   = function (bubble) { return bubble.name + " (" + bubble.year + ") activity has" + b
+ubble.count.toLocaleString ('en') + "seconds to start before it keeps growing!"; };
+      }
+      else if  (window.location.search == "?populations")
+      {
+          data  = "sample-populations.json";
+          title = "country populations";
+          info  = "https://en.wikipedia.org/wiki/";
+          tip   = function (bubble) { return bubble.name + " has " + bubble.count.toLocaleString ('en') + " people"; };
+      }
+      else
+      {
+          data  = g20;
+          title = "Mind Ballons";
+          info  = "https://github.com/paolorivas?tab=repositories";
+          tip   = function (bubble) { return bubble.name + " (" + bubble.year + ") activity has " + bubble.count.toLocaleString ('en') + " seconds to get started before it keeps growing!"; };
+      }
+
+      document.title += title;
+
+      function selected (key, bubble)  // a bubble has been double-clicked
+      {
+          window.open (info + key, "_new");
+      }
+
+      function tooltip (key, bubble)  // return the tooltip text, null or empty string for none
+      {
+          return tip (bubble);
+      }
+
+      var bubbles = new Bubbles (data, null, selected, tooltip);
+    </script>
+  </head>
+  <body>
+    <button id="restart" onclick="bubbles.restart (data)">restart animation</button>
+    <button id="my_timer" onclick="bubbles.openModal ()">Concentration mode on!</button>
+    <button id="add_New" onclick="bubbles.createNewCircle ('File Taxes', 3500)"> + </button>
+    <button id="delete_New" onclick="bubbles.deleteCircle ('SA')"> - </button>
+    <button id="grow_time" onclick="bubbles.growCircle ('SA')">Start growing!</button>
+  </body>
+</html>
